@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-menu">
+    <div class="menu-card">
+        <h2>Welcome to ChittyChattyChat</h2>
+        <p>Anonymous 1-on-1 chat with 24-hour rooms</p>
+        
+        <div class="action-buttons">
+            <button id="hostBtn" class="btn btn-primary">
+                <span class="btn-icon">🏠</span>
+                Host Chat
+            </button>
+            
+            <button id="joinBtn" class="btn btn-secondary">
+                <span class="btn-icon">🚪</span>
+                Join Chat
+            </button>
+        </div>
+    </div>
+    
+    <!-- Host Room Modal -->
+    <div id="hostModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Host a New Room</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="room-id-display">
+                    <h4>Your Room ID:</h4>
+                    <div id="roomIdDisplay" class="room-id">Generating...</div>
+                    <p class="warning">⚠️ Room will be active for 24 hours once you accept</p>
+                    <p class="help-text">Share this code with someone to start chatting!</p>
+                </div>
+                <div class="step-buttons">
+                    <button id="acceptRoomBtn" class="btn btn-primary">Accept & Start Chat</button>
+                    <button id="cancelRoomBtn" class="btn btn-outline">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Join Room Modal -->
+    <div id="joinModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Join a Room</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="roomIdInput">Enter Room ID (4 characters):</label>
+                    <input type="text" id="roomIdInput" maxlength="4" placeholder="e.g. vBqD" class="room-input">
+                    <small class="help-text">Room ID is case-sensitive - type exactly as shown</small>
+                </div>
+                <div class="step-buttons">
+                    <button id="joinRoomBtn" class="btn btn-primary">Join & Start Chat</button>
+                    <button class="btn btn-outline modal-close">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loadingText">Processing...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-card">
+        <div class="error-icon">🚫</div>
+        <h2>Access Denied</h2>
+        <p>Your IP address is not authorized to access the admin panel.</p>
+        <div class="error-details">
+            <p><strong>Your IP:</strong> <code>{{ request.environ.get('REMOTE_ADDR', 'Unknown') }}</code></p>
+            <p>Only local network addresses are permitted.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

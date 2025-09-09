@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Chat Room - ChittyChattyChat{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <!-- Room Status Bar -->
+    <div id="statusBar" class="status-bar">
+        <div class="status-left">
+            <span id="roomStatus" class="room-status">Connecting...</span>
+            <span id="roomId" class="room-id-small">{{ room_id }}</span>
+            <div id="connectionIndicators" class="connection-indicators">
+                <div id="securityStatus" class="security-status">
+                    <span id="lockIcon" class="lock-icon">🔓</span>
+                    <span id="securityText">Waiting for participants...</span>
+                </div>
+                <div id="participantList" class="participant-list">
+                    <div id="participant1" class="participant-status">
+                        <span class="participant-dot offline"></span>
+                        <span class="participant-label">Host</span>
+                    </div>
+                    <div id="participant2" class="participant-status">
+                        <span class="participant-dot offline"></span>
+                        <span class="participant-label">Guest</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="status-right">
+            <span id="timer" class="timer">--:--</span>
+        </div>
+    </div>
+    
+    <!-- Messages Container -->
+    <div id="messagesContainer" class="messages-container">
+        <div id="messagesList" class="messages-list">
+            <!-- Messages will be added here dynamically -->
+        </div>
+    </div>
+    
+    <!-- Name Selection Modal -->
+    <div id="nameModal" class="modal modal-required">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Choose Your Display Name</h3>
+            </div>
+            <div class="modal-body">
+                <p>Select one of these names to use in the chat:</p>
+                <div id="nameOptions" class="name-options">
+                    <!-- Names will be populated dynamically -->
+                </div>
+                <div class="modal-buttons">
+                    <button id="confirmNameBtn" class="btn btn-primary" disabled>Confirm Selection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Message Input Area -->
+    <div class="message-input-area">
+        <!-- File Upload Area -->
+        <div id="uploadArea" class="upload-area" style="display: none;">
+            <div class="upload-preview">
+                <img id="uploadPreview" class="upload-preview-img" alt="Upload preview">
+                <div class="upload-info">
+                    <span id="uploadFileName"></span>
+                    <button id="cancelUpload" class="btn-close">×</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-controls">
+            <div class="input-group">
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                <button id="attachBtn" class="btn btn-icon" title="Attach Image">📎</button>
+                
+                <textarea id="messageInput" placeholder="Type your message..." rows="1" disabled></textarea>
+                
+                <button id="sendBtn" class="btn btn-primary" disabled>Send</button>
+            </div>
+        </div>
+        
+        <div class="chat-actions">
+            <button id="destroyBtn" class="btn btn-danger">Destroy Chat</button>
+        </div>
+    </div>
+    
+    <!-- Name Verification Modal -->
+    <div id="verificationModal" class="modal modal-required">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Verify Participant</h3>
+            </div>
+            <div class="modal-body">
+                <p id="verificationMessage">Someone joined the room with the name:</p>
+                <div id="verificationName" class="verification-name"></div>
+                <p class="verification-question">Do you confirm this person's identity?</p>
+                <div class="modal-buttons">
+                    <button id="verifyYes" class="btn btn-primary">Yes, this is correct</button>
+                    <button id="verifyNo" class="btn btn-danger">No, something's wrong</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmTitle">Confirm Action</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure?</p>
+                <div class="modal-buttons">
+                    <button id="confirmYes" class="btn btn-danger">Yes</button>
+                    <button id="confirmNo" class="btn btn-outline">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loadingText">Loading...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/crypto.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+<script>
+    // Pass room ID to JavaScript
+    window.ROOM_ID = '{{ room_id }}';
+</script>
+{% endblock %}

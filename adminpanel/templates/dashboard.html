@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h2>Room Dashboard</h2>
+        <p>Monitoring {{ rooms|length }} rooms</p>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ rooms|selectattr('status', 'equalto', 'active')|list|length + rooms|selectattr('status', 'equalto', 'locked')|list|length }}</div>
+            <div class="stat-label">Active Rooms</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ rooms|selectattr('status', 'equalto', 'closed')|list|length }}</div>
+            <div class="stat-label">Closed Rooms</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ rooms|selectattr('status', 'equalto', 'archived')|list|length }}</div>
+            <div class="stat-label">Archived Rooms</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ rooms|sum(attribute='participant_count') }}</div>
+            <div class="stat-label">Total Participants</div>
+        </div>
+    </div>
+    
+    <div class="rooms-table-container">
+        <table class="rooms-table">
+            <thead>
+                <tr>
+                    <th>Room ID</th>
+                    <th>Status</th>
+                    <th>Participants</th>
+                    <th>Messages</th>
+                    <th>Time Left</th>
+                    <th>Latest Message</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for room in rooms %}
+                <tr class="room-row room-{{ room.status }}">
+                    <td>
+                        <span class="room-id-badge">{{ room.room_id }}</span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ room.status }}">
+                            {% if room.status == 'active' %}🟢 Active
+                            {% elif room.status == 'locked' %}🔒 Locked
+                            {% elif room.status == 'closed' %}🔴 Closed
+                            {% elif room.status == 'archived' %}📦 Archived
+                            {% elif room.status == 'pending' %}🟡 Pending
+                            {% else %}❓ {{ room.status|title }}
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="participant-count">{{ room.participant_count }}/2</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="message-count">{{ room.message_count }}</span>
+                    </td>
+                    <td class="text-center">
+                        {% if room.status in ['active', 'locked'] and room.time_left_seconds and room.time_left_seconds > 0 %}
+                            <span class="timer" data-seconds="{{ room.time_left_seconds|int }}">
+                                {{ (room.time_left_seconds / 3600)|int }}h {{ ((room.time_left_seconds % 3600) / 60)|int }}m
+                            </span>
+                        {% elif room.status in ['active', 'locked'] and room.time_left_seconds and room.time_left_seconds <= 0 %}
+                            <span class="expired">⏰ Expired</span>
+                        {% else %}
+                            <span class="na">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="latest-message">
+                        {% if room.latest_message %}
+                            <div class="message-preview">
+                                <div class="message-text">
+                                    {% if room.latest_message.msg_type == 'image' %}
+                                        🖼️ {{ room.latest_message.text }}
+                                    {% else %}
+                                        {{ room.latest_message.text }}
+                                    {% endif %}
+                                </div>
+                                {% if room.latest_message.sender %}
+                                    <div class="message-meta">
+                                        <span class="sender">{{ room.latest_message.sender }}</span>
+                                        {% if room.latest_message.created_at %}
+                                            <span class="timestamp">{{ room.latest_message.created_at.strftime('%H:%M') }}</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <span class="na">No messages</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="timestamp">
+                            <div class="date">{{ room.created_at.strftime('%Y-%m-%d') }}</div>
+                            <div class="time">{{ room.created_at.strftime('%H:%M:%S') }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            {% if room.status == 'archived' and room.archive_key %}
+                                <a href="{{ url_for('archived_transcript', room_id=room.room_id) }}" class="btn btn-sm btn-primary" title="View Archive">
+                                    📦 Archive
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('room_transcript', room_id=room.room_id) }}" class="btn btn-sm btn-primary" title="View Transcript">
+                                    📜 Transcript
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="no-data">
+                        <div class="empty-state">
+                            <div class="empty-icon">💬</div>
+                            <h3>No Rooms Found</h3>
+                            <p>No chat rooms have been created yet.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Update timers every minute
+    setInterval(updateTimers, 60000);
+    
+    function updateTimers() {
+        document.querySelectorAll('.timer[data-seconds]').forEach(timer => {
+            let seconds = parseInt(timer.dataset.seconds);
+            seconds -= 60; // Subtract 1 minute
+            
+            if (seconds <= 0) {
+                timer.innerHTML = '⏰ Expired';
+                timer.classList.add('expired');
+                timer.removeAttribute('data-seconds');
+            } else {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                timer.innerHTML = `${hours}h ${minutes}m`;
+                timer.dataset.seconds = seconds;
+            }
+        });
+    }
+    
+    // Auto-refresh dashboard every 2 minutes
+    setTimeout(() => {
+        window.location.reload();
+    }, 120000);
+</script>
+{% endblock %}

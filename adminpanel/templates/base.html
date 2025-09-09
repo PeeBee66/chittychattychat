@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel - ChittyChattyChat{% endblock %}</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <div class="header-content">
+                <h1>🛡️ ChittyChattyChat Admin</h1>
+                <nav class="admin-nav">
+                    <a href="/" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                        📊 Dashboard
+                    </a>
+                </nav>
+            </div>
+        </header>
+        
+        <main class="admin-main">
+            {% block content %}{% endblock %}
+        </main>
+        
+        <footer class="admin-footer">
+            <p>ChittyChattyChat Admin Panel • Read-Only Access • IP: {{ request.environ.get('REMOTE_ADDR', 'Unknown') }}</p>
+        </footer>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

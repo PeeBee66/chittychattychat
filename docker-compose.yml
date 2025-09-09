@@ -1,0 +1,162 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  ccc-postgres:
+    image: postgres:15-alpine
+    container_name: ccc-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_EXTERNAL_PORT}:5432"
+    volumes:
+      - ccc_pg_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    networks:
+      - ccc-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache & Message Broker
+  ccc-redis:
+    image: redis:7-alpine
+    container_name: ccc-redis
+    ports:
+      - "${REDIS_EXTERNAL_PORT}:6379"
+    volumes:
+      - ccc_redis_data:/data
+    networks:
+      - ccc-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MinIO Object Storage
+  ccc-minio:
+    image: minio/minio:latest
+    container_name: ccc-minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    ports:
+      - "${MINIO_EXTERNAL_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    volumes:
+      - ccc_minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - ccc-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Chat Application
+  ccc-chitty:
+    build:
+      context: ./chitty
+      dockerfile: Dockerfile
+    container_name: ccc-chitty
+    ports:
+      - "${CHAT_PORT}:5055"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - S3_BUCKET_ATTACH=${S3_BUCKET_ATTACH}
+      - S3_BUCKET_ARCHIVES=${S3_BUCKET_ARCHIVES}
+      - MASTER_KEY=${MASTER_KEY}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - FLASK_ENV=${FLASK_ENV}
+    depends_on:
+      ccc-postgres:
+        condition: service_healthy
+      ccc-redis:
+        condition: service_healthy
+      ccc-minio:
+        condition: service_healthy
+    networks:
+      - ccc-internal
+    restart: unless-stopped
+    volumes:
+      - ./chitty:/app
+    working_dir: /app
+
+  # Admin Panel
+  ccc-adminpanel:
+    build:
+      context: ./adminpanel
+      dockerfile: Dockerfile
+    container_name: ccc-adminpanel
+    ports:
+      - "${ADMIN_PORT}:5056"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - S3_BUCKET_ATTACH=${S3_BUCKET_ATTACH}
+      - S3_BUCKET_ARCHIVES=${S3_BUCKET_ARCHIVES}
+      - MASTER_KEY=${MASTER_KEY}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - ALLOWED_ADMIN_CIDRS=${ALLOWED_ADMIN_CIDRS}
+    depends_on:
+      ccc-postgres:
+        condition: service_healthy
+      ccc-minio:
+        condition: service_healthy
+    networks:
+      - ccc-internal
+    restart: unless-stopped
+    volumes:
+      - ./adminpanel:/app
+    working_dir: /app
+
+  # Nginx Reverse Proxy with TLS
+  ccc-nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: ccc-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      ccc-chitty:
+        condition: service_healthy
+      ccc-adminpanel:
+        condition: service_healthy
+    networks:
+      - ccc-internal
+    restart: unless-stopped
+    volumes:
+      - nginx_ssl_data:/etc/nginx/ssl
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-k", "https://localhost/nginx-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  ccc_pg_data:
+  ccc_redis_data:
+  ccc_minio_data:
+  nginx_ssl_data:
+
+networks:
+  ccc-internal:
+    driver: bridge
+    enable_ipv6: false

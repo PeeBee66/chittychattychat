@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Room {{ room.room_id }} Transcript - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="transcript">
+    <div class="transcript-header">
+        <div class="breadcrumb">
+            <a href="/">📊 Dashboard</a> › 
+            <span>Room {{ room.room_id }}</span>
+        </div>
+        
+        <div class="room-info-card">
+            <h2>Room {{ room.room_id }} Transcript</h2>
+            
+            <div class="room-meta">
+                <div class="meta-row">
+                    <span class="label">Status:</span>
+                    <span class="status-badge status-{{ room.status }}">
+                        {% if room.status == 'active' %}🟢 Active
+                        {% elif room.status == 'locked' %}🔒 Locked
+                        {% elif room.status == 'closed' %}🔴 Closed
+                        {% elif room.status == 'archived' %}📦 Archived
+                        {% elif room.status == 'pending' %}🟡 Pending
+                        {% else %}❓ {{ room.status|title }}
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="meta-row">
+                    <span class="label">Created:</span>
+                    <span class="value">{{ room.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') if room.created_at else 'Unknown' }}</span>
+                </div>
+                
+                {% if room.accepted_at %}
+                <div class="meta-row">
+                    <span class="label">Accepted:</span>
+                    <span class="value">{{ room.accepted_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+                </div>
+                {% endif %}
+                
+                {% if room.expires_at %}
+                <div class="meta-row">
+                    <span class="label">Expires:</span>
+                    <span class="value">{{ room.expires_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+                </div>
+                {% endif %}
+                
+                {% if room.closed_at %}
+                <div class="meta-row">
+                    <span class="label">Closed:</span>
+                    <span class="value">{{ room.closed_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="participants-section">
+        <h3>👥 Participants ({{ participants|length }})</h3>
+        <div class="participants-grid">
+            {% for participant in participants %}
+            <div class="participant-card">
+                <div class="participant-header">
+                    <span class="participant-name">
+                        {{ participant.display_name or 'Anonymous' }}
+                    </span>
+                    <span class="participant-role role-{{ participant.role }}">
+                        {% if participant.role == 'host' %}👑 Host{% else %}🚪 Guest{% endif %}
+                    </span>
+                </div>
+                <div class="participant-details">
+                    <div class="detail">
+                        <strong>Device ID:</strong> 
+                        <code class="device-id">{{ participant.device_id }}</code>
+                    </div>
+                    <div class="detail">
+                        <strong>IP Address:</strong> 
+                        <code class="ip-address">{{ participant.ip_address }}</code>
+                    </div>
+                    <div class="detail">
+                        <strong>Joined:</strong> 
+                        {{ participant.joined_at.strftime('%Y-%m-%d %H:%M:%S UTC') if participant.joined_at else 'Unknown' }}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-participants">
+                <p>No participants found in this room.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="messages-section">
+        <h3>💬 Messages ({{ messages|length }})</h3>
+        
+        {% if messages %}
+            <div class="messages-list">
+                {% for message in messages %}
+                <div class="message-item {% if message.decryption_error %}decryption-error{% endif %}">
+                    <div class="message-header">
+                        <div class="message-meta">
+                            <span class="message-id">#{{ message.id }}</span>
+                            <span class="sender">{{ message.display_name or 'Anonymous' }}</span>
+                            <span class="role role-{{ message.role }}">{{ message.role }}</span>
+                            <span class="timestamp">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+                        </div>
+                        <div class="message-type">
+                            {% if message.msg_type == 'text' %}💬 Text
+                            {% elif message.msg_type == 'image' %}🖼️ Image
+                            {% else %}❓ {{ message.msg_type|title }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="message-content">
+                        {% if message.decryption_error %}
+                            <div class="error-message">
+                                <span class="error-icon">⚠️</span>
+                                <span class="error-text">{{ message.decrypted_text }}</span>
+                            </div>
+                        {% else %}
+                            <div class="message-text">{{ message.decrypted_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="message-footer">
+                        <span class="ip-address">📍 {{ message.ip_address }}</span>
+                        <span class="participant-id">👤 Participant {{ message.participant_id }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-messages">
+                <div class="empty-state">
+                    <div class="empty-icon">💭</div>
+                    <h4>No Messages</h4>
+                    <p>This room doesn't contain any messages yet.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

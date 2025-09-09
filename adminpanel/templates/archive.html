@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Archived Room {{ archive.room.room_id }} - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="transcript archive">
+    <div class="transcript-header">
+        <div class="breadcrumb">
+            <a href="/">📊 Dashboard</a> › 
+            <span>Archived Room {{ archive.room.room_id }}</span>
+        </div>
+        
+        <div class="room-info-card archive-card">
+            <h2>📦 Archived Room {{ archive.room.room_id }}</h2>
+            
+            <div class="archive-meta">
+                <div class="meta-row">
+                    <span class="label">Archived At:</span>
+                    <span class="value">{{ archive.archived_at }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="label">Total Messages:</span>
+                    <span class="value">{{ archive.message_count }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="label">Participants:</span>
+                    <span class="value">{{ archive.participant_count }}</span>
+                </div>
+            </div>
+            
+            <div class="room-meta">
+                <div class="meta-row">
+                    <span class="label">Created:</span>
+                    <span class="value">{{ archive.room.created_at if archive.room.created_at else 'Unknown' }}</span>
+                </div>
+                
+                {% if archive.room.accepted_at %}
+                <div class="meta-row">
+                    <span class="label">Accepted:</span>
+                    <span class="value">{{ archive.room.accepted_at }}</span>
+                </div>
+                {% endif %}
+                
+                {% if archive.room.expires_at %}
+                <div class="meta-row">
+                    <span class="label">Expired:</span>
+                    <span class="value">{{ archive.room.expires_at }}</span>
+                </div>
+                {% endif %}
+                
+                {% if archive.room.closed_at %}
+                <div class="meta-row">
+                    <span class="label">Closed:</span>
+                    <span class="value">{{ archive.room.closed_at }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="participants-section">
+        <h3>👥 Participants ({{ archive.participants|length }})</h3>
+        <div class="participants-grid">
+            {% for participant in archive.participants %}
+            <div class="participant-card">
+                <div class="participant-header">
+                    <span class="participant-name">
+                        {{ participant.display_name or 'Anonymous' }}
+                    </span>
+                    <span class="participant-role role-{{ participant.role }}">
+                        {% if participant.role == 'host' %}👑 Host{% else %}🚪 Guest{% endif %}
+                    </span>
+                </div>
+                <div class="participant-details">
+                    <div class="detail">
+                        <strong>Device ID:</strong> 
+                        <code class="device-id">{{ participant.device_id }}</code>
+                    </div>
+                    <div class="detail">
+                        <strong>IP Address:</strong> 
+                        <code class="ip-address">{{ participant.ip_address }}</code>
+                    </div>
+                    <div class="detail">
+                        <strong>Joined:</strong> 
+                        {{ participant.joined_at if participant.joined_at else 'Unknown' }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="messages-section">
+        <h3>💬 Archived Messages ({{ archive.messages|length }})</h3>
+        
+        {% if archive.messages %}
+            <div class="messages-list">
+                {% for message in archive.messages %}
+                <div class="message-item {% if message.error %}decryption-error{% endif %}">
+                    <div class="message-header">
+                        <div class="message-meta">
+                            <span class="message-id">#{{ message.id }}</span>
+                            <span class="sender">{{ message.display_name or 'Anonymous' }}</span>
+                            <span class="role role-{{ message.role }}">{{ message.role }}</span>
+                            <span class="timestamp">{{ message.created_at }}</span>
+                        </div>
+                        <div class="message-type">
+                            {% if message.msg_type == 'text' %}💬 Text
+                            {% elif message.msg_type == 'image' %}🖼️ Image
+                            {% else %}❓ {{ message.msg_type|title }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="message-content">
+                        {% if message.error %}
+                            <div class="error-message">
+                                <span class="error-icon">⚠️</span>
+                                <span class="error-text">{{ message.message }} ({{ message.error }})</span>
+                            </div>
+                        {% else %}
+                            <div class="message-text">{{ message.message }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="message-footer">
+                        <span class="ip-address">📍 {{ message.ip_address }}</span>
+                        <span class="participant-id">👤 Participant {{ message.participant_id }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-messages">
+                <div class="empty-state">
+                    <div class="empty-icon">📦</div>
+                    <h4>No Archived Messages</h4>
+                    <p>This archived room doesn't contain any messages.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
