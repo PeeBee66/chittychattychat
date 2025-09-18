@@ -30,7 +30,11 @@ def get_or_create_device_id():
 def create_room():
     """Create a new room in pending state"""
     try:
-        room = Room.create_room()
+        data = request.get_json() or {}
+        room_id = data.get('room_id')
+
+        # Create room with optional specified ID
+        room = Room.create_room(room_id=room_id)
         if not room:
             logger.error("Failed to create room - Room.create_room() returned None")
             return jsonify({'error': 'Failed to create room'}), 500

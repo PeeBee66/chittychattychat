@@ -57,7 +57,13 @@ def create_app():
     def index():
         """Main chat interface"""
         return render_template('index.html')
-    
+
+    @app.route('/join/<room_id>')
+    def join_room_direct(room_id):
+        """Direct link to join a room - redirects to index with room parameter"""
+        from flask import redirect, url_for
+        return redirect(url_for('index', room=room_id))
+
     @app.route('/room/<room_id>')
     def room(room_id):
         """Room-specific chat interface"""

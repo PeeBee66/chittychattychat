@@ -1,0 +1,291 @@
+/* Additional Mobile Enhancements */
+
+/* Use CSS custom property for viewport height */
+.chat-container {
+    height: calc(100vh - 120px);
+    height: calc(var(--vh, 1vh) * 100 - 120px);
+}
+
+/* Mobile touch states */
+.is-mobile .btn {
+    -webkit-tap-highlight-color: rgba(99, 102, 241, 0.1);
+}
+
+.is-mobile .btn.touch-active {
+    transform: scale(0.95);
+}
+
+/* Fix for iOS keyboard */
+.is-ios .message-input-area {
+    position: relative;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.is-ios.keyboard-open .messages-container {
+    padding-bottom: 0;
+}
+
+/* Better text rendering on mobile */
+.is-mobile {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+}
+
+/* Improve scrolling performance */
+.messages-list {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Optimize animations for mobile */
+.is-mobile .message {
+    animation: none;
+    opacity: 1;
+    transform: none;
+}
+
+/* Better touch targets */
+.is-mobile .btn,
+.is-mobile .name-option,
+.is-mobile input,
+.is-mobile textarea {
+    min-height: 44px;
+    padding: 12px;
+}
+
+/* Improve modal appearance on mobile */
+.is-mobile .modal-content {
+    margin: 0;
+    max-height: calc(100vh - 20px);
+    max-height: calc(var(--vh, 1vh) * 100 - 20px);
+    border-radius: 16px 16px 0 0;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    animation: slideUpMobile 0.3s ease;
+}
+
+@keyframes slideUpMobile {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Input improvements */
+.is-mobile input[type="text"],
+.is-mobile input[type="password"],
+.is-mobile textarea {
+    font-size: 16px !important;
+    -webkit-appearance: none;
+    border-radius: 0;
+}
+
+/* Prevent text selection issues */
+.is-mobile .btn,
+.is-mobile .message-header {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Better message bubbles on mobile */
+@media (max-width: 767px) {
+    .message {
+        max-width: 90%;
+    }
+
+    .message-content {
+        font-size: 15px;
+        line-height: 1.4;
+        padding: 10px 14px;
+    }
+
+    .message.own .message-content {
+        border-radius: 18px 18px 4px 18px;
+    }
+
+    .message.other .message-content {
+        border-radius: 18px 18px 18px 4px;
+    }
+}
+
+/* Compact status bar on mobile */
+@media (max-width: 480px) {
+    .status-bar {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .connection-indicators {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .security-status {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+
+    .participant-list {
+        gap: 8px;
+    }
+
+    .participant-label {
+        font-size: 12px;
+    }
+}
+
+/* Fix for notched phones */
+@supports (padding: env(safe-area-inset-left)) {
+    .container {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+
+    header {
+        padding-top: calc(var(--spacing-md) + env(safe-area-inset-top));
+    }
+
+    .message-input-area {
+        padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
+    }
+}
+
+/* Landscape mode adjustments */
+@media (orientation: landscape) and (max-height: 600px) {
+    .chat-container {
+        height: calc(100vh - 80px);
+        height: calc(var(--vh, 1vh) * 100 - 80px);
+    }
+
+    header {
+        padding: 8px 16px;
+    }
+
+    header h1 {
+        font-size: 18px;
+    }
+
+    .status-bar {
+        padding: 6px 12px;
+    }
+
+    .messages-container {
+        margin-bottom: 8px;
+    }
+
+    .message-input-area {
+        padding: 8px;
+    }
+
+    footer {
+        display: none;
+    }
+}
+
+/* Improved room code input */
+.room-input {
+    letter-spacing: 0.2em;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-align: center;
+    caret-color: var(--primary-color);
+}
+
+.room-input::placeholder {
+    letter-spacing: normal;
+    font-family: inherit;
+    font-weight: normal;
+}
+
+/* Better loading states */
+.is-mobile .spinner {
+    width: 36px;
+    height: 36px;
+}
+
+/* Optimize images */
+.message-image {
+    max-width: 250px;
+    max-height: 400px;
+    object-fit: contain;
+}
+
+/* Fix button group on mobile */
+@media (max-width: 480px) {
+    .modal-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modal-buttons .btn {
+        width: 100%;
+    }
+}
+
+/* Improve typing indicator */
+.typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border-radius: 16px;
+    margin: 8px 0;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: var(--text-secondary);
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: 0s; }
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+
+/* Connection status improvements */
+.connection-status {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--danger-color);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    z-index: 1001;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.connection-status.show {
+    opacity: 1;
+}
+
+.connection-status.connected {
+    background: var(--success-color);
+}
+
+/* Swipe to refresh prevention */
+.is-mobile {
+    overscroll-behavior-y: contain;
+}

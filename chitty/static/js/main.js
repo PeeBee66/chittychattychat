@@ -35,10 +35,12 @@ class ChittyChattyChat {
             });
         });
         
-        // Click outside modal to close
+        // Click outside modal to close (except for host modal)
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', (e) => {
-                if (e.target === modal && !modal.classList.contains('modal-required')) {
+                if (e.target === modal &&
+                    !modal.classList.contains('modal-required') &&
+                    !modal.classList.contains('no-close-outside')) {
                     this.hideModal(modal);
                 }
             });
@@ -54,17 +56,23 @@ class ChittyChattyChat {
     showModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
-            modal.classList.add('show');
+            modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+
+            // Add no-close-outside class to host modal
+            if (modalId === 'hostModal') {
+                modal.classList.add('no-close-outside');
+            }
         }
     }
-    
+
     hideModal(modal) {
         if (typeof modal === 'string') {
             modal = document.getElementById(modal);
         }
         if (modal && !modal.classList.contains('modal-required')) {
-            modal.classList.remove('show');
+            modal.classList.remove('active');
+            modal.classList.remove('no-close-outside');
             document.body.style.overflow = '';
         }
     }
@@ -74,14 +82,14 @@ class ChittyChattyChat {
         const loadingText = document.getElementById('loadingText');
         if (overlay && loadingText) {
             loadingText.textContent = text;
-            overlay.classList.add('show');
+            overlay.classList.add('active');
         }
     }
-    
+
     hideLoading() {
         const overlay = document.getElementById('loadingOverlay');
         if (overlay) {
-            overlay.classList.remove('show');
+            overlay.classList.remove('active');
         }
     }
     

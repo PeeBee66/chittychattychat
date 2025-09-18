@@ -15,18 +15,27 @@ class Room:
         return ''.join(random.choices(chars, k=4))
     
     @staticmethod
-    def create_room() -> Dict:
-        """Create a new room in pending state"""
+    def create_room(room_id: Optional[str] = None) -> Dict:
+        """Create a new room in pending state, optionally with a specified room_id"""
         max_attempts = 10
-        for _ in range(max_attempts):
-            room_id = Room.generate_room_id()
+        attempts = 0
+
+        while attempts < max_attempts:
+            # Use provided room_id or generate a new one
+            if room_id and attempts == 0:
+                # First attempt uses the provided room_id
+                current_room_id = room_id
+            else:
+                # Generate new ID for subsequent attempts or if none provided
+                current_room_id = Room.generate_room_id()
+
             try:
                 query = """
                 INSERT INTO rooms (room_id, status, created_at)
                 VALUES (%s, 'pending', %s)
                 RETURNING room_id, created_at
                 """
-                result = db.execute_one(query, (room_id, datetime.utcnow()))
+                result = db.execute_one(query, (current_room_id, datetime.utcnow()))
                 if result:
                     return {
                         'room_id': result['room_id'],
@@ -35,10 +44,16 @@ class Room:
                     }
             except Exception as e:
                 if "duplicate key" in str(e).lower():
-                    continue  # Try another room_id
+                    if room_id and attempts == 0:
+                        # If custom room_id was taken, generate a new one
+                        logger.info(f"Room ID {room_id} already exists, generating new one")
+                    attempts += 1
+                    continue
                 logger.error(f"Error creating room: {e}")
                 raise
-        
+
+            attempts += 1
+
         raise Exception("Failed to generate unique room ID after multiple attempts")
     
     @staticmethod

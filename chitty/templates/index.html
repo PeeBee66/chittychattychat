@@ -8,12 +8,19 @@
         
         <div class="action-buttons">
             <button id="hostBtn" class="btn btn-primary">
-                <span class="btn-icon">🏠</span>
+                <svg class="btn-svg-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
                 Host Chat
             </button>
-            
+
             <button id="joinBtn" class="btn btn-secondary">
-                <span class="btn-icon">🚪</span>
+                <svg class="btn-svg-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <polyline points="10 17 15 12 10 7"></polyline>
+                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                </svg>
                 Join Chat
             </button>
         </div>
@@ -29,7 +36,16 @@
             <div class="modal-body">
                 <div class="room-id-display">
                     <h4>Your Room ID:</h4>
-                    <div id="roomIdDisplay" class="room-id">Generating...</div>
+                    <div class="room-id-container">
+                        <div id="roomIdDisplay" class="room-id">Generating...</div>
+                        <button id="copyRoomBtn" class="btn btn-icon-text" title="Copy room info">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
                     <p class="warning">⚠️ Room will be active for 24 hours once you accept</p>
                     <p class="help-text">Share this code with someone to start chatting!</p>
                 </div>

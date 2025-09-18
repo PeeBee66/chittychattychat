@@ -134,6 +134,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8443:8443"
     depends_on:
       ccc-chitty:
         condition: service_healthy
@@ -143,7 +144,7 @@ services:
       - ccc-internal
     restart: unless-stopped
     volumes:
-      - nginx_ssl_data:/etc/nginx/ssl
+      - ./certs/nginx:/etc/nginx/ssl:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "-k", "https://localhost/nginx-health"]
       interval: 30s
@@ -154,7 +155,6 @@ volumes:
   ccc_pg_data:
   ccc_redis_data:
   ccc_minio_data:
-  nginx_ssl_data:
 
 networks:
   ccc-internal:
